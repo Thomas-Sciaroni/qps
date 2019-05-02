@@ -23,7 +23,7 @@ private:
     bool generated;
     int mazeDimSq;
 public:
-    mazeToGraph();
+   // mazeToGraph();
     mazeToGraph(double, int, double, double, double, double);
     double adjMatAccess(int, int);
     void mouseParamUpdate(double, double, double, double);
