@@ -6,32 +6,9 @@
 #define SOUTH         (uint8_t)0x04
 #define WEST          (uint8_t)0x08
 
-//Assume standard 16x16 "classic" micromouse maze dimensions
-//Assume baseline mouse performance;
-//Edit: Combined with the other constructor.
-// mazeToGraph::mazeToGraph() {
-//     maxSpeed = 1.0;         //meters per second
-//     maxPosAccel = 4.0;      //meters per second squared
-//     maxNegAccel = 10.0;     //meters per second squared
-//     maxLatAccel = 0.8;      //meters per second squared
-//     mazeUnitWidth = 0.180;    //meters
-//     mazeDim = 16;           //16x16 square units
-//     mazeDimSq = mazeDim * mazeDim;
-//     generated = false;
-//     imported = false;
-// }
 
 mazeToGraph::mazeToGraph(double mUW = 0.180, int mD = 16, double mS = 1.0, double mPA = 4.0, double mNA = 10.0, double mLA = 0.8) {
-// maxSpeed = mS;          //meters per second
-// maxPosAccel = mPA;      //meters per second squared
-// maxNegAccel = mNA;      //meters per second squared
-// maxLatAccel = mLA;      //meters per second squared
-//above is basically mouseParamUpdate
 	mouseParamUpdate(mS, mPA, mNA, mLA);
-//below is basically mazeParamUpdate
-// mazeUnitWidth = mUW;    //millimeters
-// mazeDim = mD;           //16x16 square units
-// mazeDimSq = mazeDim * mazeDim;
  	mazeParamUpdate(double mUW, int mD)
     generated = false;
     imported = false;
