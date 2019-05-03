@@ -174,3 +174,8 @@ bool mazeToGraph::generateGraph() {
 bool mazeToGraph::ready() {
     return (imported && generated);
 }
+
+
+int mazeToGraph::getDimensions() {
+    return mazeDim;
+}

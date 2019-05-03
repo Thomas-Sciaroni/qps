@@ -7,6 +7,7 @@
 #include <fstream>
 #include <string>
 #include <cmath>
+#include <limits>
 
 class mazeToGraph{
 private:
@@ -23,8 +24,9 @@ private:
     bool generated;
     int mazeDimSq;
 public:
-   // mazeToGraph();
+    mazeToGraph();
     mazeToGraph(double, int, double, double, double, double);
+    int getDimensions();
     double adjMatAccess(int, int);
     void mouseParamUpdate(double, double, double, double);
     void mazeParamUpdate(double, int);
