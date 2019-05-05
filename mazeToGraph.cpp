@@ -6,10 +6,22 @@
 #define SOUTH         (uint8_t)0x04
 #define WEST          (uint8_t)0x08
 
+mazeToGraph::mazeToGraph() { //default constructor
+    mazeUnitWidth = 0.180;  //meters
+    mazeDim = 16;           //16x16 square units
+    mazeDimSq = mazeDim * mazeDim;
+    maxSpeed = 1.0;         //meters per second
+    maxPosAccel = 4.0;      //meters per second squared
+    maxNegAccel = 10.0;     //meters per second squared
+    maxLatAccel = 0.8; 
+    generated = false;
+    imported = false;
+}
 
-mazeToGraph::mazeToGraph(double mUW = 0.180, int mD = 16, double mS = 1.0, double mPA = 4.0, double mNA = 10.0, double mLA = 0.8) {
-	mouseParamUpdate(mS, mPA, mNA, mLA);
- 	mazeParamUpdate(double mUW, int mD)
+//constructor with default maze parameters
+mazeToGraph::mazeToGraph(double mUW = 0.180, int mD = 16, double mS, double mPA, double mNA, double mLA) {
+	mazeParamUpdate(double mUW, int mD);
+    mouseParamUpdate(mS, mPA, mNA, mLA);
     generated = false;
     imported = false;
 }
@@ -26,7 +38,7 @@ double mazeToGraph::adjMatAccess(int row, int col) {
         return 100*mazeDim;
     }
 }
-
+ 
 void mazeToGraph::mouseParamUpdate(double mS, double mPA, double mNA, double mLA) {
     maxSpeed = mS;          //meters per second
     maxPosAccel = mPA;      //meters per second squared
@@ -84,7 +96,7 @@ bool mazeToGraph::importMaze(char *fname) {
 //in the vectorTable, where the index is the distance
 //and the value stored is the cost of traversal (edge weight)
 bool mazeToGraph::generateGraph() {
-    int offset, v1, v2, distance;
+    int offset, v1, v2, distance; 
     double  intermediateDistance, intermediateTime, targetDistance, accelRatio,
             posAccelDistance, vMaxLocal, timeToLocalMaxSpeed,
             timeToLocalBrake;
@@ -173,4 +185,8 @@ bool mazeToGraph::generateGraph() {
 
 bool mazeToGraph::ready() {
     return (imported && generated);
+}
+
+int mazeToGraph::getDimensions() {
+    return mazeDim;
 }
