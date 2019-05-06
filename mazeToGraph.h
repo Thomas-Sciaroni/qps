@@ -26,6 +26,8 @@ public:
    // mazeToGraph();
     mazeToGraph(double, int, double, double, double, double);
     double adjMatAccess(int, int);
+    int getDimensions();
+    int getDimensionsSq();
     void mouseParamUpdate(double, double, double, double);
     void mazeParamUpdate(double, int);
     bool importMaze(char*);
@@ -33,4 +35,5 @@ public:
     bool ready();
 };
 
+// };
 #endif //QPS_MAZETOGRAPH_H

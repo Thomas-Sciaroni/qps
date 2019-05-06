@@ -77,7 +77,7 @@ bool mazeToGraph::importMaze(char *fname) {
     getline(mazeFile, currentLine);
 
     int lineNumber = 0;
-    while(mazeFile.good()){
+    while(mazeFile.good() && lineNumber != mazeDim){ //edit: forced while loop to stop if lineNumber exceeds mazeDim.
         for(int i = 0; i != mazeDim; ++i){
             binaryWallMat[lineNumber][i] = currentLine[i];
         }
@@ -189,4 +189,8 @@ bool mazeToGraph::ready() {
 
 int mazeToGraph::getDimensions() {
     return mazeDim;
+}
+
+int mazeToGraph::getDimensionsSq() {
+    return mazeDimSq;
 }
