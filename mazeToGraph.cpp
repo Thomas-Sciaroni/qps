@@ -104,7 +104,7 @@ bool mazeToGraph::generateGraph() {
     double timeToMaxSpeed = (maxSpeed - vMaxCorner) / maxPosAccel;
     double timeToBrake = (maxSpeed - vMaxCorner)/ maxNegAccel;
     double distanceToMaxSpeed = ((maxSpeed + vMaxCorner) / 2) * timeToMaxSpeed;
-    double distanceToBreak = ((maxSpeed * vMaxCorner) / 2) * timeToBrake;
+    double distanceToBrake = ((maxSpeed * vMaxCorner) / 2) * timeToBrake;
 
     adjMat = new double *[mazeDimSq];
     for(int i = 0; i != mazeDimSq; ++i){
@@ -117,8 +117,8 @@ bool mazeToGraph::generateGraph() {
     vectorTable = new double [mazeDim];
     for(int i = 1; i != mazeDim; ++i){
         targetDistance = mazeUnitWidth * i;
-        if((targetDistance) > (distanceToMaxSpeed + distanceToBreak)){
-            intermediateDistance = (targetDistance) - distanceToMaxSpeed + distanceToBreak;
+        if((targetDistance) > (distanceToMaxSpeed + distanceToBrake)){
+            intermediateDistance = (targetDistance) - distanceToMaxSpeed + distanceToBrake;
             intermediateTime = intermediateDistance / maxSpeed;
             vectorTable[i] = timeToMaxSpeed + intermediateTime + timeToBrake;
         }
