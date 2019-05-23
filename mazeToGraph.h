@@ -19,15 +19,16 @@ private:
     int mazeDim;
     double *vectorTable;
     double **adjMat;
-    char **binaryWallMat;
+    uint8_t **binaryWallMat;
     bool imported;
     bool generated;
     int mazeDimSq;
 public:
-    mazeToGraph();
-    mazeToGraph(double, int, double, double, double, double);
+    explicit mazeToGraph(double = 0.180, int = 16, double = 1.0 , double = 4.0, double = 5.0, double = 0.8);
     int getDimensions();
     double adjMatAccess(int, int);
+    uint8_t binWallMatAccess(int, int);
+    int getDimensionsSq();
     void mouseParamUpdate(double, double, double, double);
     void mazeParamUpdate(double, int);
     bool importMaze(char*);
@@ -35,4 +36,5 @@ public:
     bool ready();
 };
 
+// };
 #endif //QPS_MAZETOGRAPH_H

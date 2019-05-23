@@ -7,9 +7,10 @@
 #define WEST          (uint8_t)0x08
 
 
-mazeToGraph::mazeToGraph(double mUW = 0.180, int mD = 16, double mS = 1.0, double mPA = 4.0, double mNA = 10.0, double mLA = 0.8) {
-	mouseParamUpdate(mS, mPA, mNA, mLA);
- 	mazeParamUpdate(double mUW, int mD)
+//constructor with default maze parameters
+mazeToGraph::mazeToGraph(double mUW, int mD, double mS, double mPA, double mNA, double mLA) {
+    mazeParamUpdate(mUW, mD);
+    mouseParamUpdate(mS, mPA, mNA, mLA);
     generated = false;
     imported = false;
 }
@@ -24,6 +25,15 @@ double mazeToGraph::adjMatAccess(int row, int col) {
     }
     else{
         return 100*mazeDim;
+    }
+}
+
+uint8_t mazeToGraph::binWallMatAccess(int row, int col) {
+    if(imported && row < mazeDimSq && col < mazeDimSq){
+        return binaryWallMat[row][col];
+    }
+    else{
+        return 0xFF;
     }
 }
 
@@ -44,16 +54,18 @@ void mazeToGraph::mazeParamUpdate(double mUW, int mD) {
 //imports a binary file (standard format, see documentation)
 //takes filename as an argument
 bool mazeToGraph::importMaze(char *fname) {
-    std::ifstream mazeFile;
-    mazeFile.open(fname, std::ifstream::in);
-    if(!mazeFile){
+    FILE *mazeFile;
+    mazeFile = fopen(fname, "r+");
+    //std::cout << "Location of maze file: " << mazeFile << std::endl;
+    if (mazeFile == nullptr)
+    {
         imported = false;
         return imported;
     }
 
-    binaryWallMat = new char *[mazeDim];
-    for (int i = 0; i != mazeDim; ++i) {
-        binaryWallMat[i] = new char[mazeDim];
+    binaryWallMat = new uint8_t *[16];
+    for (int i = 0; i != 16; ++i) {
+        binaryWallMat[i] = new uint8_t[16];
     }
     for(int i = 0; i != mazeDim; ++i){
         for(int j = 0; j != mazeDim; ++j){
@@ -61,18 +73,15 @@ bool mazeToGraph::importMaze(char *fname) {
         }
     }
 
-    std::string currentLine;
-    getline(mazeFile, currentLine);
-
-    int lineNumber = 0;
-    while(mazeFile.good()){
-        for(int i = 0; i != mazeDim; ++i){
-            binaryWallMat[lineNumber][i] = currentLine[i];
+    uint8_t value;
+    for(int i = 0; i != mazeDim; ++i){
+        for(int j = 0; j != mazeDim; ++j){
+            fread(&value, 1, 1, mazeFile);
+            binaryWallMat[i][j] = value;
         }
-        getline(mazeFile, currentLine);
-        lineNumber++;
     }
-    mazeFile.close();
+
+    fclose(mazeFile);
 
     imported = true;
     return imported;
@@ -92,21 +101,13 @@ bool mazeToGraph::generateGraph() {
     double timeToMaxSpeed = (maxSpeed - vMaxCorner) / maxPosAccel;
     double timeToBrake = (maxSpeed - vMaxCorner)/ maxNegAccel;
     double distanceToMaxSpeed = ((maxSpeed + vMaxCorner) / 2) * timeToMaxSpeed;
-    double distanceToBreak = ((maxSpeed * vMaxCorner) / 2) * timeToBrake;
-
-    adjMat = new double *[mazeDimSq];
-    for(int i = 0; i != mazeDimSq; ++i){
-        adjMat[i] = new double [mazeDimSq];
-        for(int j = 0; j != mazeDimSq; ++j){
-            adjMat[i][j] = 0;
-        }
-    }
+    double distanceToBrake = ((maxSpeed * vMaxCorner) / 2) * timeToBrake;
 
     vectorTable = new double [mazeDim];
     for(int i = 1; i != mazeDim; ++i){
         targetDistance = mazeUnitWidth * i;
-        if((targetDistance) > (distanceToMaxSpeed + distanceToBreak)){
-            intermediateDistance = (targetDistance) - distanceToMaxSpeed + distanceToBreak;
+        if((targetDistance) > (distanceToMaxSpeed + distanceToBrake)){
+            intermediateDistance = (targetDistance) - distanceToMaxSpeed + distanceToBrake;
             intermediateTime = intermediateDistance / maxSpeed;
             vectorTable[i] = timeToMaxSpeed + intermediateTime + timeToBrake;
         }
@@ -121,19 +122,27 @@ bool mazeToGraph::generateGraph() {
     }
 
 
+    adjMat = new double *[mazeDimSq];
+    for(int i = 0; i != mazeDimSq; ++i){
+        adjMat[i] = new double [mazeDimSq];
+        for(int j = 0; j != mazeDimSq; ++j){
+            adjMat[i][j] = 0;
+        }
+    }
+
     //North-South sight-lines
     for(int i = 0; i != mazeDim; ++i){
         for(int j = 0; j != mazeDim; ++j){
             if((binaryWallMat[i][j] & SOUTH) == SOUTH){
                 if((binaryWallMat[i][j] & NORTH) != NORTH){
                     offset = 1;
-                    while((binaryWallMat[i+offset][j] & NORTH) != NORTH){
+                    while((binaryWallMat[i][j+offset] & NORTH) != NORTH){
                         offset++;
                     }
                     for(int k = 0; k < offset; ++k){
                         for(int m = k + 1; m <= offset; ++m){
-                            v1 = (((i + k + 1) * (j + 1)) - 1);
-                            v2 = (((i + m + 1) * (j + 1)) - 1);
+                            v1 = ((i * 16) + (j + k));
+                            v2 = ((i * 16) + (j + m));
                             distance = m - k;
                             adjMat[v1][v2] = vectorTable[distance];
                             adjMat[v2][v1] = vectorTable[distance];
@@ -147,16 +156,16 @@ bool mazeToGraph::generateGraph() {
     //East-West sight-lines
     for(int i = 0; i != mazeDim; ++i){
         for(int j = 0; j != mazeDim; ++j){
-            if((binaryWallMat[i][j] & EAST) == EAST){
-                if((binaryWallMat[i][j] & WEST) != WEST){
+            if((binaryWallMat[i][j] & WEST) == WEST){
+                if((binaryWallMat[i][j] & EAST) != EAST){
                     offset = 1;
-                    while((binaryWallMat[i][j+offset] & WEST) != WEST){
+                    while((binaryWallMat[i+offset][j] & EAST) != EAST){
                         offset++;
                     }
                     for(int k = 0; k < offset; ++k){
                         for(int m = k + 1; m <= offset; ++m){
-                            v1 = (((i + 1) * (j + k + 1)) - 1);
-                            v2 = (((i + 1) * (j + m + 1)) - 1);
+                            v1 = (((i + k) * 16) + j);
+                            v2 = (((i + m) * 16) + j);
                             distance = m - k;
                             adjMat[v1][v2] = vectorTable[distance];
                             adjMat[v2][v1] = vectorTable[distance];
@@ -175,7 +184,10 @@ bool mazeToGraph::ready() {
     return (imported && generated);
 }
 
-
 int mazeToGraph::getDimensions() {
     return mazeDim;
+}
+
+int mazeToGraph::getDimensionsSq() {
+    return mazeDimSq;
 }
